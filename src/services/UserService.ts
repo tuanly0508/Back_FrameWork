@@ -1,12 +1,25 @@
 import { QueryResult } from 'pg'
 import {pool} from '../database'
 import {v4 as uuid} from 'uuid'
+import { User } from '../model/User'
 
 class UserService {
+
+    checkMail = async(email:string) => { 
+        const response: QueryResult = await pool.query('select email from users where email = $1 and delete_at is null',[email])
+        return response.rows
+    }
     
     //register
-    register = async(nameUser:string,email:string,phone:string,address:string,pass:string) => {
-        await pool.query('insert into users values ($1,$2,$3,$4,$5,default,$6,$7)', [uuid(),nameUser,email,phone,address,pass,new Date()])
+    register = async(user:User) => {
+        const id = uuid()
+        await pool.query('insert into users values ($1,$2,$3,$4,$5,$6,$7,$8)', [id,user.name_user,user.email,user.phone,user.address,user.role,user.pass,new Date()])
+        await pool.query('insert into order_temp values ($1,$2,$3)',[uuid(),id,new Date()])
+    }
+
+    delete = async(idUser:string) => {
+        await pool.query('delete from order_temp where id_user = $1', [idUser])
+        await pool.query('delete from users where id_user = $1', [idUser])
     }
 
     //login
@@ -16,14 +29,16 @@ class UserService {
     }
 
     //get
-    get = async() => {
-        const response: QueryResult = await pool.query('select id_user,name_user ,email ,phone ,address from users where delete_at is null')
+    list = async() => {
+        const response: QueryResult = await pool.query('select id_user,name_user ,email ,phone ,address,create_at ,update_at  from users where delete_at is null order by create_at')
         return response.rows
     }
 
     //update
-    update = async(nameUser:string,email:string,phone:string,address:string,idUser: string) => {
-        await pool.query('UPDATE users set name_user=$1,email=$2,phone=$3,address=$4,update_at=$5 where id_user=$6', [nameUser,email,phone,address,new Date(),idUser])
+    update = async(user:User) => {
+        console.log(user);
+        
+        await pool.query('UPDATE users set name_user=$1,email=$2,phone=$3,address=$4,update_at=$5 where id_user=$6', [user.name_user,user.email,user.phone,user.address,new Date(),user.id_user])
     }
 
     //get me

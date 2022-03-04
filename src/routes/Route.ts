@@ -18,9 +18,8 @@ router.post('/users/login', userController.login)
 router.put('/users/update', userController.update)
 router.get('/users/detail/:idUser', userController.getById)
 router.get('/users/getMe' ,userController.authToken,userController.getMe)
-// router.get('/users', userController.get);
-// router.post('/users/create', userController.create)
-// router.get('/users/delete/:idUser', userController.delete)
+router.get('/users/list', userController.list);
+router.post('/users/delete', userController.delete);
 
 //product user
 router.post('/product/list', productController.list)
@@ -66,10 +65,14 @@ router.get('/brand', brandController.get)
 
 //category
 router.get('/category', categoryController.get)
+router.post('/category/create', categoryController.create)
+router.put('/category/update', categoryController.update)
+router.post('/category/delete', categoryController.delete)
 
 //weight
 router.get('/weight/:idProductLine', weightController.list)
 router.get('/weight', weightController.get)
+
 
 //color 
 router.get('/age', ageController.get)

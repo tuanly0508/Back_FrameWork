@@ -3,6 +3,7 @@ import { QueryResult } from 'pg'
 import { pool } from '../database'
 import { OrderTemp } from '../model/OrderTemp'
 
+var nodemailer = require('nodemailer');
 class OrderService {
 
     //pagination
@@ -54,6 +55,30 @@ class OrderService {
     update = async (orderTemp: OrderTemp) => {    
         await pool.query('UPDATE order_temp set is_temp = false, create_at =$3,name=$4,phone=$5,address=$6,status=$7,email=$8 where id_order = $1 and id_user = $2',
             [orderTemp.idOrder, orderTemp.idUser, new Date(), orderTemp.name, orderTemp.phone, orderTemp.address, 'Pending', orderTemp.email])
+        await pool.query('insert into order_temp values ($1,$2,$3)',[uuid(),orderTemp.idUser,new Date()])
+        
+        var transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: 'sikienbmto1@gmail.com',
+              pass: '01263500'
+            }
+          });
+          
+          var mailOptions = {
+            from: 'CatchyShop',
+            to: orderTemp.email,
+            subject: 'Sending Email using Node.js',
+            text: 'That was easy!'
+          };
+          
+          transporter.sendMail(mailOptions, function(error:any, info:any){
+            if (error) {
+              console.log(error);
+            } else {
+              console.log('Email sent: ' + info.response);
+            }
+          });
     }
 
     //get page admin
