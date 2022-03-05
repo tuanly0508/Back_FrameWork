@@ -13,8 +13,6 @@ class CategoryService {
 
     //create    
     create = async(category:Category) => {
-        console.log(category);
-        
         await pool.query('INSERT INTO category VALUES ($1,$2,$3)', [uuid(),category.name_category,new Date()])
     }
 

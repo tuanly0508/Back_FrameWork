@@ -1,30 +1,44 @@
 import { NextFunction, Request, Response } from "express";
 import { userService } from "../services/UserService";
 import jwt from "jsonwebtoken";
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 class UserController {
 
     register = async (req: Request, res: Response) => {
         const { user } = req.body
         const email = await userService.checkMail(user.email)
-        if (email.length >= 0) {
+        if (email) {
             return res.json(email)
         } else {
-            await userService.register(user)
-            return res.json(email)
+            bcrypt.hash (user.pass, saltRounds, async(err:string, hash:string) => {
+                await userService.register(user,hash)
+                if (user.address) {
+                    const data = await userService.list()
+                    return res.json(data)
+                }else{
+                    return res.json(email)
+                }
+            });
         }
     }
 
     login = async (req: Request, res: Response) => {
         const { email, pass } = req.body
-        const data = await userService.login(email, pass)
-        if (!data || data.length <= 0) {
-            return res.json(data)
-        } else {
-            const idUser = data.id_user
-            const accessToken = jwt.sign({ idUser }, process.env.ACCESS_TOKEN_SECRET || 'tokenTest', { expiresIn: '6000s' })
-            return res.json({ data, accessToken })
+        const data = await userService.checkMail(email)
+        const dataFail:[] = []
+        if(data) {
+            bcrypt.compare(pass, data.pass, async (err:string, result:boolean) => {
+                const datas = await userService.login(email, data.pass)
+                if (result) {
+                    const idUser = datas.id_user
+                    const accessToken = jwt.sign({ idUser }, process.env.ACCESS_TOKEN_SECRET || 'tokenTest', { expiresIn: '6000s' })
+                    return res.json({ datas, accessToken })
+                }else {
+                    return res.json(dataFail)
+                }
+            });
         }
-
     }
 
     authToken = async (req: Request, res: Response, next: NextFunction) => {

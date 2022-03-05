@@ -68,8 +68,12 @@ class OrderService {
           var mailOptions = {
             from: 'CatchyShop',
             to: orderTemp.email,
-            subject: 'Sending Email using Node.js',
-            text: 'That was easy!'
+            subject: 'Your order has been placed successfully.',
+            text: `Your order will be send to: 
+            Full name: ${orderTemp.name}
+            Phone: ${orderTemp.phone}
+            Address: ${orderTemp.address}
+            `
           };
           
           transporter.sendMail(mailOptions, function(error:any, info:any){

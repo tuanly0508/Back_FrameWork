@@ -6,14 +6,14 @@ import { User } from '../model/User'
 class UserService {
 
     checkMail = async(email:string) => { 
-        const response: QueryResult = await pool.query('select email from users where email = $1 and delete_at is null',[email])
-        return response.rows
+        const response: QueryResult = await pool.query('select * from users where email = $1 and delete_at is null',[email])
+        return response.rows[0]
     }
     
     //register
-    register = async(user:User) => {
+    register = async(user:User,hashPass:string) => {
         const id = uuid()
-        await pool.query('insert into users values ($1,$2,$3,$4,$5,$6,$7,$8)', [id,user.name_user,user.email,user.phone,user.address,user.role,user.pass,new Date()])
+        await pool.query('insert into users values ($1,$2,$3,$4,$5,$6,$7,$8)', [id,user.name_user,user.email,user.phone,user.address,user.role,hashPass,new Date()])
         await pool.query('insert into order_temp values ($1,$2,$3)',[uuid(),id,new Date()])
     }
 
@@ -30,14 +30,12 @@ class UserService {
 
     //get
     list = async() => {
-        const response: QueryResult = await pool.query('select id_user,name_user ,email ,phone ,address,create_at ,update_at  from users where delete_at is null order by create_at')
+        const response: QueryResult = await pool.query('select id_user,name_user ,email ,phone ,address,create_at ,update_at from users order by create_at desc')
         return response.rows
     }
 
     //update
     update = async(user:User) => {
-        console.log(user);
-        
         await pool.query('UPDATE users set name_user=$1,email=$2,phone=$3,address=$4,update_at=$5 where id_user=$6', [user.name_user,user.email,user.phone,user.address,new Date(),user.id_user])
     }
 
